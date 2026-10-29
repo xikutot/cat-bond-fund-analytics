@@ -1,0 +1,37 @@
+Fund,Cash,Plenum CAT Bond UCITS Fund Index - Master Capital,,Fermat UCITS Cat Bond Fund,Plenum CAT Bond Dynamic Fund,Plenum CAT Bond Defensive Fund,Plenum Insurance Capital Fund,Solidum Cat Bond Fund,Solidum Event Linked Securities Fund Limited - SAC Fund 2,Solidum Event Linked Securities Fund Limited - SAC Fund 3,GAM Swiss Re Cat Bond,Mosaic ILS Fund,Securis Catastrophe Bond Fund,Twelve Alliance Dynamic ILS Fund,Twelve Cat Bond Fund,Lumyna - Twelve Capital Parametric ILS Fund ,AXA IM WAVe Cat Bonds Fund,Euler (Lux) Cat Bond Fund,Euler (Lux) ILS Balanced Fund,Euler (Lux) ILS Low Volatility Plus Fund,Franklin Cat Bond UCITS Fund,Icosa Cat Bond Fund,Leadenhall UCITS ILS Fund,LGT (Lux) I – Cat Bond Fund,Maneki Cat Bond Fund,Schroder GAIA Cat Bond,Tenax ILS UCITS Fund
+Class,,,,M,S,R,I,R,A-1,I-1,Inst,I,A,I,I,B,I,EB,SB-II,SB,I,I,B,B,N,IF,A
+ISIN,,,,IE000H9QPLV8,LI1115714191,LI0115208568,LI0542471003,LI0049587293,BMG827361020,BMG827364099,IE00B6WYL972,LU2260199109,IE00BYYCCY78,IE000N7OMF32,IE00BD2B9264,LU2881765403,IE00BZCPNB98,LU2250179053,LU1614180567,LU1708468852,LU3047210656,LI1288551529,IE00BYTQ6J71,LU0816332745,IE000IMC7MR5,LU0951570687,IE00BM9M0116
+Link,https://testfol.io/,https://www.artemis.bm/catastrophe-bond-fund-indices/,https://platform.withintelligence.com/performance/indices/11750,https://www.scopeexplorer.com/en/details/fermat-ucits-cat-bond-fund-f-acc-usd/148783,https://www.plenum.ch/funds/#fond_s-anteilsklasse-i-thesaurierend-i-usd-i-li1115714191,https://www.plenum.ch/funds/#fond_r-anteilsklasse-i-thesaurierund-i-usd-i-li0115208568,https://www.plenum.ch/funds/#fond_i-anteilsklasse-i-thesaurierend-i-usd-i-li0542471003,https://www.solidumpartners.ch/products/14,https://www.solidumpartners.ch/en/products/12,https://www.solidumpartners.ch/en/products/13,https://www.gam.com/en/funds/IE00B6WYL972,https://twelvesecuris.com/products/,https://twelvesecuris.com/products/,https://twelvesecuris.com/products/,https://twelvesecuris.com/products/,https://www.lumyna.com/share/LU2881765403,https://funds.axa-im.ch/en/professional/fund/axa-im-wave-cat-bonds-fund-i-accumulation-usd/,https://euler.ltd/en/products/confirmed,https://euler.ltd/en/products/confirmed,https://euler.ltd/en/products/confirmed,https://www.franklintempleton.fi/price-and-performance/products/42012/J/franklin-cat-bond-ucits-fund,https://www.mrbpartner.ch/en/products/funds/all-funds/icosa-cat-bond-fund/,https://www.leadenhallcp.com/ucits-new/,https://markets.ft.com/data/funds/tearsheet/summary?s=LU0816332745:USD,https://www.almacapital.com/funds/maneki-cat-bond-fund/#facts-documents,https://www.schroders.com/en-ch/ch/professional/fund-centre/?language=en&location=ch&channel=professional&clientId=schdr&clientVersion=v1&externalId=SCHDR_F00000QKZK&r=%2Ffund%2FSCHDR_F00000QKZK%2F&fundName=Schroder-GAIA-Cat-Bond-IF-Accumulation-USD,https://www.tenaxcapital.com/investorareails
+Dealing Frequency,,,,"weekly (mo), monthly (lbd)",weekly (fr),weekly (fr),weekly,weekly,"monthly, redemption 25% per 3 months","subscritpion 1st day of Jan, Apr, May, Jun, Dec; redemption August 29 for a stepped redemption in the following year",weekly (fr),monthly (lbd),weekly,weekly,weekly,"subscription monthly, redemption quarterly",semi-monthly (first&third fr),weekly (mo),"subscription monthly, redemption quarterly","subscription monthly, redemption quarterly","semi-monthly (second, fourth fr)",weekly (fr),"semi-monthly (second fr, lbd)","semi-monthly (fr after second mo, lbd)",weekly,"semi-monthly and monthly (second, fourth fr, lbd)","Semi-monthly and monthly (first& second fr, lbd"
+Minimum,,,,50m,100,100,100k,10k,100k,10m,500k,1m,5m,1m,1m,1m,1m,n/a,n/a,n/a,5m,1m,5m,100k,100k,1m,1k
+Management Fee,,,,0.95%,0.35%,1.50%,0.70%,1.00%,1.50%,1.00%,0.65%,1.00%,0.65%,0.90%,0.90%,0.95%,0.75%,0.80%,0.80%,0.30%,0.75%,1.07%,0.35%,1.50%,1.22%,1.10%,1.80%
+Ongoing Charges,,,,1.08%,0.60%,1.80%,1.00%,1.25%,,,0.75%,2.20%,0.90%,1.20%,1.10%,1.70%,0.86%,1.50%,1.30%,1.00%,1.05%,1.10%,0.35%,1.69%,1.52%,1.31%,1.99%
+Transaction Expenses,,,,0.07%,0.10%,0.10%,0.10%,0.28%,,,0.03%,0.20%,0.10%,0.20%,0.10%,0.20%,0.08%,0.10%,0.00%,0.00%,0.57%,0.30%,,0.00%,0.10%,0.06%,
+Performance Fee,,,,no,no,no,no,no,no,no,10.00%,no,no,no,no,15.00%,no,no,no,no,no,no,no,no,no,no,no
+Comments,Not a fund,Not a fund,Not a fund,Cat Bonds,Cat Bonds,Cat Bonds,Includes Insurance Corporate Bonds,Cat Bonds,General ILS,General ILS,Cat Bonds,General ILS,Cat Bonds,Up to 30% normal bonds,Cat Bonds,General ILS,Cat Bonds,Cat Bonds,General ILS,General ILS,Cat Bonds,General ILS,Cat Bonds,Cat Bonds,Cat Bonds,Cat Bonds,Cat Bonds
+Norm Class,,,,extrapolated,I,I,interpolated,I,interpolated,interpolated,Inst,I,interpolated,I,I,B,I,IB1,IB1,IB1,interpolated,I,interpolated,interpolated,interpolated,IF,I
+Norm ISIN,,,,n/a,LI1115702857,LI0227305864,n/a,LI0467052754 ,n/a,n/a,IE00B6WYL972,LU2260199109,n/a,IE000N7OMF32,IE00BD2B9264,LU2881765403,IE00BZCPNB98,n/a,n/a,n/a,n/a,LI1288551529,n/a,n/a,n/a,LU0951570687,IE000EBGP7C7
+Norm Minimum,,,,1m,1m,1m,1m,1m,1m,1m,500k (best),1m,1m,1m,1m,1m,1m,1m,1m,1m,1m,1m,1m,1m,1m,1m,1m
+Norm Management Fee,,,,1.25%,0.90%,0.85%,0.65%,0.75%,1.25%,1.25%,0.65%,1.00%,0.70%,0.90%,0.90%,0.95%,0.75%,1.20%,0.90%,0.80%,0.75%,1.07%,0.60%,0.95%,0.98%,1.10%,1.00%
+,,,,,,,,,,,,,,,,,,,,,,,,,,,
+Year,,,,,,,,,,,,,,,,,,,,,,,,,,,
+2025,4.11%,9.76%,11.39%,10.56%,11.31%,7.89%,11.01%,9.92%,11.64%,10.96%,9.81%,8.05%,9.81%,9.55%,9.45%,9.98%,9.75%,10.05%,3.65%,7.02%,9.93%,9.66%,11.29%,8.31%,10.98%,9.58%,11.70%
+2024,5.09%,14.01%,14.04%,,16.01%,11.72%,15.45%,14.30%,17.02%,17.11%,15.16%,18.32%,13.08%,,15.24%,,13.47%,13.86%,15.53%,11.52%,14.25%,11.70%,14.58%,12.02%,13.34%,13.43%,14.18%
+2023,5.16%,15.96%,14.93%,,15.89%,11.26%,14.71%,14.94%,16.61%,19.04%,16.49%,,16.21%,,16.58%,,16.09%,15.18%,19.94%,15.74%,13.36%,,15.88%,13.25%,14.66%,16.50%,
+2022,2.05%,-2.70%,-1.77%,,-1.20%,-2.45%,-6.98%,-4.07%,-2.73%,-0.56%,-2.47%,,-2.25%,,-2.86%,,-1.57%,-2.04%,-2.67%,-0.55%,-1.86%,,0.52%,-2.70%,-0.81%,-2.88%,
+2021,0.05%,3.46%,1.19%,,,0.79%,6.11%,4.91%,5.10%,7.27%,4.43%,,2.48%,,3.32%,,4.71%,4.08%,2.74%,3.13%,,,3.69%,1.42%,5.71%,3.28%,
+2020,0.35%,4.70%,3.68%,,,2.94%,,5.02%,4.83%,8.92%,4.46%,,5.62%,,,,3.88%,5.63%,5.78%,5.26%,,,6.45%,4.63%,6.93%,5.20%,
+2019,2.08%,4.15%,1.43%,,,1.95%,,5.10%,3.84%,8.22%,5.65%,,4.70%,,,,3.74%,2.95%,-5.49%,0.78%,,,5.75%,2.08%,,4.10%,
+2018,1.95%,1.73%,-3.50%,,,-1.01%,,4.13%,4.31%,10.88%,2.31%,,2.49%,,,,2.06%,0.94%,-6.40%,,,,1.64%,1.32%,,2.09%,
+2017,0.94%,0.69%,-5.33%,,,0.25%,,-1.78%,-8.03%,,1.60%,,1.24%,,,,0.20%,0.43%,,,,,-0.60%,0.98%,,-0.03%,
+2016,0.32%,4.31%,5.41%,,,3.76%,,4.72%,6.61%,,4.96%,,,,,,,,,,,,4.62%,3.09%,,4.35%,
+2015,0.05%,2.65%,4.32%,,,1.86%,,0.72%,3.06%,,2.95%,,,,,,,,,,,,,1.57%,,3.25%,
+2014,0.03%,3.75%,5.45%,,,2.74%,,2.17%,4.58%,,4.88%,,,,,,,,,,,,,2.15%,,4.38%,
+2013,0.06%,7.54%,7.68%,,,5.53%,,4.64%,9.59%,,9.75%,,,,,,,,,,,,,5.04%,,,
+2012,0.09%,5.97%,5.96%,,,6.51%,,3.90%,8.26%,,,,,,,,,,,,,,,,,,
+2011,0.05%,,-0.20%,,,,,0.57%,-7.66%,,,,,,,,,,,,,,,,,,
+2010,0.14%,,7.54%,,,,,7.69%,16.20%,,,,,,,,,,,,,,,,,,
+2009,0.15%,,8.99%,,,,,,8.60%,,,,,,,,,,,,,,,,,,
+2008,1.38%,,3.90%,,,,,,3.51%,,,,,,,,,,,,,,,,,,
+2007,4.43%,,14.23%,,,,,,18.01%,,,,,,,,,,,,,,,,,,
+2006,4.82%,,9.99%,,,,,,,,,,,,,,,,,,,,,,,,
