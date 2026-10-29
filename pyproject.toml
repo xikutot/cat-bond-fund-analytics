@@ -7,7 +7,12 @@ authors = [
     { name = "Sylvester Homberger", email = "78343592+xikutot@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "ipykernel>=7.4.0",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.4",
+    "pandas>=3.1.0",
+]
 
 [project.scripts]
 analysis = "analysis:main"
