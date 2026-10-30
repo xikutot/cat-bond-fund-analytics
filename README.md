@@ -1,4 +1,4 @@
-# Cat-Bond Fund Data
+# Cat-Bond Fund Analysis
 
 A collection of fund metadata, reported fund and index returns, and original charts derived from the collected data.
 
