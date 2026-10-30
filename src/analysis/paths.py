@@ -13,3 +13,4 @@ RAW_DATA_DIR = d(DATA_DIR / "raw")
 PROCESSED_DATA_DIR = d(DATA_DIR / "processed")
 
 NOTEBOOKS = d(ROOT_DIR / "notebooks")
+FIGURES_DIR = d(NOTEBOOKS / "figures")
