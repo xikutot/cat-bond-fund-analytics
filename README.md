@@ -2,6 +2,14 @@
 
 A collection of fund metadata, reported fund and index returns, and original charts derived from the collected data.
 
+## Setup
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
+uv run nbstripout --install
+```
+
 ## Sources
 
 The CSVs include URLs to potentially relevant source documents for reference and verification. Their inclusion does not imply that any particular figure was obtained from that source.
