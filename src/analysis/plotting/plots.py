@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from analysis.figure import lines, matrix, show
+from analysis.plotting.figure import lines, matrix, show
 from analysis.utils import expect
 
 
