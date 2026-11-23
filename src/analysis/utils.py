@@ -1,6 +1,13 @@
 from collections.abc import Iterable
+from numbers import Real
 
 import pandas as pd
+
+
+def as_float(value: object, *, label: str) -> float:
+    if isinstance(value, Real):
+        return float(value)
+    raise TypeError(f"{label} is not a real number")
 
 
 def expect[T](value: object, cls: type[T]) -> T:

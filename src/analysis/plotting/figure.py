@@ -12,7 +12,7 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import FuncFormatter
 from PIL import Image
 
-from analysis.paths import NOTEBOOKS
+from analysis import paths
 
 TITLE_SIZE: int = 28
 
@@ -23,6 +23,7 @@ def lines(
     title: str,
     ylabel: str,
     percent: bool = False,
+    logy: bool = False,
     figsize: tuple[float, float] = (13, 6),
 ) -> tuple[Figure, Axes]:
     fig, ax = plt.subplots(figsize=figsize)
@@ -30,6 +31,8 @@ def lines(
 
     ax.set(ylabel=ylabel, xlabel="")
     ax.set_title(title, fontsize=TITLE_SIZE)
+    if logy:
+        ax.set_yscale("log")
     if percent:
         ax.yaxis.set_major_formatter(
             FuncFormatter(lambda value, _: f"{value:.0%}")
@@ -54,13 +57,14 @@ def matrix(
     column_positions: Sequence[int] | None = None,
     x_rotation: int = 0,
     x_ha: str = "center",
+    cmap: str = "RdYlGn",
 ) -> tuple[Figure, Axes]:
     fig, ax = plt.subplots(figsize=figsize)
     image = ax.imshow(
         np.ma.masked_invalid(values),
         aspect="auto",
         interpolation="none",
-        cmap="RdYlGn",
+        cmap=cmap,
         vmin=vmin,
         vmax=vmax,
     )
@@ -118,5 +122,5 @@ def save(
     description = (
         description.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
     )
-    link = path.relative_to(NOTEBOOKS).as_posix()
+    link = path.relative_to(paths.NOTEBOOKS).as_posix()
     print(f"![{description}]({quote(link, safe='._-/')})")

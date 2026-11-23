@@ -3,26 +3,10 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from analysis.data.sources import (
-    GSW_ZERO_2Y,
-    GSW_ZERO_3Y,
-    GSW_ZERO_4Y,
-    GSW_ZERO_5Y,
-    GSW_ZERO_9Y,
-    GSW_ZERO_10Y,
-    GSW_ZERO_29Y,
-    GSW_ZERO_30Y,
-    GSW_ZERO_YIELDS,
-)
-from analysis.utils import expect
+from analysis import columns as col, utils
 
 
 DAYS_PER_YEAR: float = 365.25
-
-UST_ZERO_3Y: str = "UST Zero 3Y Return"
-UST_ZERO_5Y: str = "UST Zero 5Y Return"
-UST_ZERO_10Y: str = "UST Zero 10Y Return"
-UST_ZERO_30Y: str = "UST Zero 30Y Return"
 
 
 @dataclass(frozen=True)
@@ -34,10 +18,10 @@ class ZeroTenor:
 
 
 ZERO_TENORS: tuple[ZeroTenor, ...] = (
-    ZeroTenor(UST_ZERO_3Y, 3.0, GSW_ZERO_3Y, GSW_ZERO_2Y),
-    ZeroTenor(UST_ZERO_5Y, 5.0, GSW_ZERO_5Y, GSW_ZERO_4Y),
-    ZeroTenor(UST_ZERO_10Y, 10.0, GSW_ZERO_10Y, GSW_ZERO_9Y),
-    ZeroTenor(UST_ZERO_30Y, 30.0, GSW_ZERO_30Y, GSW_ZERO_29Y),
+    ZeroTenor(col.UST_ZERO_3Y, 3.0, col.GSW_ZERO_3Y, col.GSW_ZERO_2Y),
+    ZeroTenor(col.UST_ZERO_5Y, 5.0, col.GSW_ZERO_5Y, col.GSW_ZERO_4Y),
+    ZeroTenor(col.UST_ZERO_10Y, 10.0, col.GSW_ZERO_10Y, col.GSW_ZERO_9Y),
+    ZeroTenor(col.UST_ZERO_30Y, 30.0, col.GSW_ZERO_30Y, col.GSW_ZERO_29Y),
 )
 
 
@@ -65,12 +49,12 @@ def _price(row: pd.Series, tenor: ZeroTenor, years: float) -> float:
 
 
 def _month_ends(frame: pd.DataFrame) -> pd.DataFrame:
-    valid = frame.loc[frame[list(GSW_ZERO_YIELDS)].notna().all(axis=1)]
-    index = expect(valid.index, pd.DatetimeIndex)
+    valid = frame.loc[frame[list(col.GSW_ZERO_YIELDS)].notna().all(axis=1)]
+    index = utils.expect(valid.index, pd.DatetimeIndex)
     months = pd.Index(index.strftime("%Y-%m"), name="Month")
     monthly = valid.groupby(months).tail(1)
     monthly.index = pd.DatetimeIndex(
-        expect(monthly.index, pd.DatetimeIndex) + pd.offsets.MonthEnd(0),
+        utils.expect(monthly.index, pd.DatetimeIndex) + pd.offsets.MonthEnd(0),
         name="Month",
     )
     return monthly.sort_index()

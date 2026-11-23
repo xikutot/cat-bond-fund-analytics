@@ -2,50 +2,20 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from analysis.data.store import CsvStore
-from analysis.utils import expect, expect_columns
+from analysis import columns as col, utils
+from analysis.data import _store as data_store
 
 
-# ---------------------------------------------------------------------------
-# Raw assumptions: metadata row names
-# ---------------------------------------------------------------------------
-MANAGEMENT_FEE: str = "Management Fee"
-NORM_MANAGEMENT_FEE: str = "Norm Management Fee"
-
-# Raw assumptions: column names
-CASH: str = "Cash"
-
-# Raw assumptions: row formats
-MONTH_FORMAT: str = "%Y-%m-%d"
-YEAR_PATTERN: str = r"\d{4}"
-
-# Raw assumptions: Federal Reserve GSW zero-coupon yield curve
-# Source: https://www.federalreserve.gov/data/nominal-yield-curve.htm
+# Raw source files and row formats
 GSW_FILE: str = "feds200628.csv"
 GSW_HEADER_ROW: int = 9
-GSW_DATE: str = "Date"
-GSW_ZERO_2Y: str = "SVENY02"
-GSW_ZERO_3Y: str = "SVENY03"
-GSW_ZERO_4Y: str = "SVENY04"
-GSW_ZERO_5Y: str = "SVENY05"
-GSW_ZERO_9Y: str = "SVENY09"
-GSW_ZERO_10Y: str = "SVENY10"
-GSW_ZERO_29Y: str = "SVENY29"
-GSW_ZERO_30Y: str = "SVENY30"
-GSW_ZERO_YIELDS: tuple[str, ...] = (
-    GSW_ZERO_2Y,
-    GSW_ZERO_3Y,
-    GSW_ZERO_4Y,
-    GSW_ZERO_5Y,
-    GSW_ZERO_9Y,
-    GSW_ZERO_10Y,
-    GSW_ZERO_29Y,
-    GSW_ZERO_30Y,
-)
+MONTH_FORMAT: str = "%Y-%m-%d"
+YEAR_PATTERN: str = r"\d{4}"
 
 
 # ---------------------------------------------------------------------------
@@ -82,7 +52,7 @@ class SourceSpec:
     metadata_rows: tuple[str, ...] = ()
     skip_rows: int = 0
 
-    def load(self, raw: CsvStore) -> SourceTable:
+    def load(self, raw: data_store.CsvStore) -> SourceTable:
         return self.parse(raw.read(self.file_name, skiprows=self.skip_rows), self)
 
 
@@ -160,7 +130,7 @@ def _parse_table(raw: pd.DataFrame, spec: SourceSpec, key: RowKey) -> SourceTabl
     columns = raw.columns[1:]
     metadata = _metadata(raw, spec, label, columns)
 
-    labels = expect(raw[label], pd.Series)
+    labels = utils.expect(raw[label], pd.Series)
     valid, index = key(labels)
     data = raw.loc[valid, columns].map(_parse_percent)
     data.index = index
@@ -177,10 +147,10 @@ def parse_yearly_table(raw: pd.DataFrame, spec: SourceSpec) -> SourceTable:
 
 
 def parse_gsw_yields(raw: pd.DataFrame, spec: SourceSpec) -> SourceTable:
-    expect_columns(raw, [GSW_DATE, *GSW_ZERO_YIELDS])
+    utils.expect_columns(raw, [col.GSW_DATE, *col.GSW_ZERO_YIELDS])
 
-    dates = pd.to_datetime(raw[GSW_DATE], format=MONTH_FORMAT, errors="coerce")
-    data = raw.loc[dates.notna(), list(GSW_ZERO_YIELDS)].map(_parse_number)
+    dates = pd.to_datetime(raw[col.GSW_DATE], format=MONTH_FORMAT, errors="coerce")
+    data = raw.loc[dates.notna(), list(col.GSW_ZERO_YIELDS)].map(_parse_number)
     data.index = pd.DatetimeIndex(dates.loc[dates.notna()], name="Date")
 
     return SourceTable(data.sort_index(), pd.DataFrame())
@@ -193,7 +163,7 @@ FUND_MONTHLY: SourceSpec = SourceSpec(
     "fund_monthly",
     "monthly.csv",
     parse_monthly_table,
-    (MANAGEMENT_FEE, NORM_MANAGEMENT_FEE),
+    (col.MANAGEMENT_FEE, col.NORM_MANAGEMENT_FEE),
 )
 FUND_YEARLY: SourceSpec = SourceSpec(
     "fund_yearly",
@@ -216,7 +186,8 @@ GSW_YIELDS: SourceSpec = SourceSpec(
 # ---------------------------------------------------------------------------
 # Loader
 # ---------------------------------------------------------------------------
-def load_sources(raw: CsvStore) -> Sources:
+def load(directory: Path) -> Sources:
+    raw = data_store.CsvStore(directory)
     return Sources(
         fund_monthly=FUND_MONTHLY.load(raw),
         fund_yearly=FUND_YEARLY.load(raw),

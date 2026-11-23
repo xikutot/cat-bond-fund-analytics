@@ -1,1 +1,1 @@
-"""Analysis stages: paths, utils, data sources, raw checks, panels, plotting."""
+"""Turn raw fund and market CSVs into a reproducible fund decision."""
