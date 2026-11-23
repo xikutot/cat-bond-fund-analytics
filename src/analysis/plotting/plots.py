@@ -40,10 +40,14 @@ def _cumulative_series(data: pd.DataFrame) -> pd.DataFrame:
 
 def monthly_heatmap(
     returns: pd.DataFrame,
+    columns: Sequence[str] | None = None,
     months: int = 36,
     title: str = "Monthly returns",
 ) -> tuple[Figure, Axes]:
     data = returns.sort_index().tail(months).dropna(axis=1, how="all")
+
+    if columns is not None:
+        data = data.loc[:, columns]
 
     if data.empty:
         raise ValueError("No return data available for the heatmap.")

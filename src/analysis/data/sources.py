@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from analysis.data.store import CsvStore
-from analysis.utils import expect
+from analysis.utils import expect, expect_columns
 
 
 # ---------------------------------------------------------------------------
@@ -22,6 +22,30 @@ CASH: str = "Cash"
 # Raw assumptions: row formats
 MONTH_FORMAT: str = "%Y-%m-%d"
 YEAR_PATTERN: str = r"\d{4}"
+
+# Raw assumptions: Federal Reserve GSW zero-coupon yield curve
+# Source: https://www.federalreserve.gov/data/nominal-yield-curve.htm
+GSW_FILE: str = "feds200628.csv"
+GSW_HEADER_ROW: int = 9
+GSW_DATE: str = "Date"
+GSW_ZERO_2Y: str = "SVENY02"
+GSW_ZERO_3Y: str = "SVENY03"
+GSW_ZERO_4Y: str = "SVENY04"
+GSW_ZERO_5Y: str = "SVENY05"
+GSW_ZERO_9Y: str = "SVENY09"
+GSW_ZERO_10Y: str = "SVENY10"
+GSW_ZERO_29Y: str = "SVENY29"
+GSW_ZERO_30Y: str = "SVENY30"
+GSW_ZERO_YIELDS: tuple[str, ...] = (
+    GSW_ZERO_2Y,
+    GSW_ZERO_3Y,
+    GSW_ZERO_4Y,
+    GSW_ZERO_5Y,
+    GSW_ZERO_9Y,
+    GSW_ZERO_10Y,
+    GSW_ZERO_29Y,
+    GSW_ZERO_30Y,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -47,6 +71,7 @@ class Sources:
     fund_monthly: SourceTable
     fund_yearly: SourceTable
     asset_classes: SourceTable
+    gsw_yields: SourceTable
 
 
 @dataclass(frozen=True)
@@ -55,9 +80,10 @@ class SourceSpec:
     file_name: str
     parse: SourceParser
     metadata_rows: tuple[str, ...] = ()
+    skip_rows: int = 0
 
     def load(self, raw: CsvStore) -> SourceTable:
-        return self.parse(raw.read(self.file_name), self)
+        return self.parse(raw.read(self.file_name, skiprows=self.skip_rows), self)
 
 
 SourceParser = Callable[[pd.DataFrame, SourceSpec], SourceTable]
@@ -79,6 +105,17 @@ def _parse_percent(value: object) -> float:
 
     number = float(text.removesuffix("%").replace(",", ""))
     return number / 100 if text.endswith("%") else number
+
+
+def _parse_number(value: object) -> float:
+    if value is None or value is pd.NA or value is pd.NaT:
+        return np.nan
+
+    text = str(value).strip()
+    if not text or text == "NA":
+        return np.nan
+
+    return float(text)
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +176,16 @@ def parse_yearly_table(raw: pd.DataFrame, spec: SourceSpec) -> SourceTable:
     return _parse_table(raw, spec, _year_key)
 
 
+def parse_gsw_yields(raw: pd.DataFrame, spec: SourceSpec) -> SourceTable:
+    expect_columns(raw, [GSW_DATE, *GSW_ZERO_YIELDS])
+
+    dates = pd.to_datetime(raw[GSW_DATE], format=MONTH_FORMAT, errors="coerce")
+    data = raw.loc[dates.notna(), list(GSW_ZERO_YIELDS)].map(_parse_number)
+    data.index = pd.DatetimeIndex(dates.loc[dates.notna()], name="Date")
+
+    return SourceTable(data.sort_index(), pd.DataFrame())
+
+
 # ---------------------------------------------------------------------------
 # Source definitions
 # ---------------------------------------------------------------------------
@@ -158,6 +205,12 @@ ASSET_CLASSES: SourceSpec = SourceSpec(
     "asset_classes.csv",
     parse_monthly_table,
 )
+GSW_YIELDS: SourceSpec = SourceSpec(
+    "gsw_yields",
+    GSW_FILE,
+    parse_gsw_yields,
+    skip_rows=GSW_HEADER_ROW,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -168,4 +221,5 @@ def load_sources(raw: CsvStore) -> Sources:
         fund_monthly=FUND_MONTHLY.load(raw),
         fund_yearly=FUND_YEARLY.load(raw),
         asset_classes=ASSET_CLASSES.load(raw),
+        gsw_yields=GSW_YIELDS.load(raw),
     )

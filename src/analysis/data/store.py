@@ -9,8 +9,8 @@ class CsvStore:
     def __init__(self, directory: Path) -> None:
         self.directory = directory
 
-    def read(self, name: str) -> pd.DataFrame:
-        return pd.read_csv(self.directory / name, dtype=str)
+    def read(self, name: str, *, skiprows: int = 0) -> pd.DataFrame:
+        return pd.read_csv(self.directory / name, dtype=str, skiprows=skiprows)
 
     def write(
         self,

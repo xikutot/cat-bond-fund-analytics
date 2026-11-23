@@ -12,6 +12,7 @@ from analysis.data.sources import (
     Sources,
 )
 from analysis.data.store import CsvStore
+from analysis.data.treasury import zero_returns
 from analysis.utils import expect
 
 
@@ -38,6 +39,23 @@ class PanelBuilder(Protocol):
     ) -> Panel: ...
 
 
+class TreasuryZeroReturns:
+    name: str = "treasury_zero_returns"
+    file_name: str | None = None
+
+    def build(
+        self,
+        sources: Sources,
+        panels: Mapping[str, pd.DataFrame],
+    ) -> Panel:
+        frame = zero_returns(sources.gsw_yields.data).reindex(
+            sources.asset_classes.data.index
+        )
+        if frame.isna().to_numpy().any():
+            raise ValueError("Missing synthetic Treasury returns")
+        return Panel(self.name, self.file_name, frame)
+
+
 class AssetClassReturns:
     name: str = "asset_class_returns"
     file_name: str | None = "asset_class_returns.csv"
@@ -47,7 +65,11 @@ class AssetClassReturns:
         sources: Sources,
         panels: Mapping[str, pd.DataFrame],
     ) -> Panel:
-        return Panel(self.name, self.file_name, sources.asset_classes.data)
+        return Panel(
+            self.name,
+            self.file_name,
+            sources.asset_classes.data.join(panels[TreasuryZeroReturns.name]),
+        )
 
 
 class FeeNormalizer:
@@ -123,6 +145,7 @@ class ExcessReturnComparison:
 
 
 BUILDERS: tuple[PanelBuilder, ...] = (
+    TreasuryZeroReturns(),
     AssetClassReturns(),
     FeeNormalizer(),
     CashExcess(),
