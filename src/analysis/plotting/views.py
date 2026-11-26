@@ -3,8 +3,8 @@ from collections.abc import Sequence
 import numpy as np
 import pandas as pd
 
-from analysis import columns as col, utils
-
+from analysis import columns as col
+from analysis import utils
 
 SIGNIFICANCE_LEVELS: tuple[tuple[float, str], ...] = (
     (0.01, "***"),
@@ -62,7 +62,7 @@ def exposure_view(
     exposures: pd.DataFrame,
     *,
     sort_funds: bool,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, float]:
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     utils.expect_columns(
         exposures, (col.FUND, col.FACTOR, col.IMPACT_PER_SD, col.P_VALUE)
     )
@@ -83,16 +83,11 @@ def exposure_view(
         impacts = impacts.loc[order]
         pvalues = pvalues.loc[order]
 
-    raw = impacts.to_numpy(dtype=float)
-    limit = max(float(np.nanquantile(np.abs(raw), 0.95)), 0.1)
     labels = impacts.map(lambda value: f"{value:+.1f}") + pvalues.map(
         significance_stars
     )
-    labels = labels.where(np.isfinite(impacts), "")
-    colors = impacts.abs().gt(0.65 * limit).map(
-        lambda bright: "white" if bright else "black"
-    )
-    return impacts, labels, colors, limit
+    formatted = labels.where(np.isfinite(impacts), "")
+    return impacts, formatted
 
 
 def anchored_growth(returns: pd.DataFrame, anchor: pd.Timestamp) -> pd.DataFrame:

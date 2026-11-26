@@ -10,10 +10,11 @@ from PIL import Image
 from analysis import paths
 
 
-def show(fig: Figure) -> None:
-    """Display a figure now and close it, so notebook output stays ordered."""
+def show(fig: Figure) -> Figure:
+    """Return a displayed figure after closing it, keeping notebook output ordered."""
     display(fig)
     plt.close(fig)
+    return fig
 
 
 def _same_pixels(path: Path, png: bytes) -> bool:

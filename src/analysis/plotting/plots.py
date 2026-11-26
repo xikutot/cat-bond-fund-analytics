@@ -1,12 +1,26 @@
 from collections.abc import Sequence
 from textwrap import shorten
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 
 from analysis import utils
-from analysis.plotting import draw, output, views
+from analysis.plotting import buckets, draw, output, views
+
+
+def _time_heatmap(
+    data: pd.DataFrame,
+    *,
+    title: str,
+    color_label: str,
+) -> Figure:
+    """Draw a dated matrix with twelve sampled date labels."""
+    matrix = data.T.rename(columns=lambda date: date.strftime("%Y-%m"))
+    fig, ax = plt.subplots(figsize=(14, max(5, len(data.columns) * 0.32)))
+    draw.heatmap(matrix, ax, title=title, color_label=color_label, x_tick_count=12)
+    return output.show(fig)
 
 
 def monthly_heatmap(
@@ -20,17 +34,7 @@ def monthly_heatmap(
     if data.empty:
         raise ValueError("No return data available for the heatmap.")
 
-    fig = draw.heatmap(
-        data.T,
-        title=title,
-        color_label="Monthly return",
-        figsize=(14, max(5, len(data.columns) * 0.32)),
-        date_columns=True,
-        x_rotation=45,
-        x_ha="right",
-    )
-    output.show(fig)
-    return fig
+    return _time_heatmap(data, title=title, color_label="Monthly return")
 
 
 def rolling_returns_heatmap(
@@ -48,21 +52,15 @@ def rolling_returns_heatmap(
         .apply(np.prod, raw=True)
         .sub(1)
     )
-    rolling = rolling.dropna(axis=1, how="all")
+    rolling = utils.expect(rolling.dropna(axis=1, how="all"), pd.DataFrame)
     if rolling.empty:
         raise ValueError("No rolling return data available.")
 
-    fig = draw.heatmap(
-        rolling.T,
+    return _time_heatmap(
+        rolling,
         title=f"Rolling {window}-month returns" if title is None else title,
         color_label="Return",
-        figsize=(14, max(5, len(rolling.columns) * 0.32)),
-        date_columns=True,
-        x_rotation=45,
-        x_ha="right",
     )
-    output.show(fig)
-    return fig
 
 
 def correlation_heatmap(
@@ -72,24 +70,21 @@ def correlation_heatmap(
     title: str = "Correlation with fund and index returns",
 ) -> Figure:
     values, bucket_values = views.correlation_view(frame, columns)
-    fig = draw.bucketed_matrix(
-        values,
+    display = values.rename(
+        columns=lambda name: shorten(str(name), width=18, placeholder="…")
+        if name
+        else ""
+    )
+    fig = buckets.bucketed_matrix(
+        display,
         bucket_values=bucket_values,
         title=title,
         color_label="Correlation",
         unit=" mo",
         header="Overlap",
         figsize=(14, max(8, len(values.index) * 0.32)),
-        column_labels=[
-            shorten(str(name), width=18, placeholder="…") if name else ""
-            for name in values.columns
-        ],
-        x_rotation=45,
-        x_ha="right",
-        x_labelsize=8,
     )
-    output.show(fig)
-    return fig
+    return output.show(fig)
 
 
 def factor_exposure_heatmap(
@@ -98,22 +93,17 @@ def factor_exposure_heatmap(
     sort_funds: bool = True,
     title: str = "Factor exposures",
 ) -> Figure:
-    values, labels, colors, limit = views.exposure_view(exposures, sort_funds=sort_funds)
-    fig = draw.heatmap(
+    values, labels = views.exposure_view(exposures, sort_funds=sort_funds)
+    fig, ax = plt.subplots(figsize=(15, max(7, len(values) * 0.45)))
+    draw.heatmap(
         values,
+        ax,
         title=title,
         color_label="pp per 1 SD factor move (fixed common-window SD)",
-        limit=limit,
-        cmap=draw.DIVERGING_CMAP,
-        figsize=(15, max(7, len(values) * 0.45)),
-        x_rotation=45,
-        x_ha="right",
-        y_labelsize=8,
-        cell_labels=labels,
-        cell_colors=colors,
+        cmap="RdBu_r",
     )
-    output.show(fig)
-    return fig
+    draw.annotate(ax, labels)
+    return output.show(fig)
 
 
 def anchored_growth(
@@ -130,10 +120,10 @@ def anchored_growth(
     )
     values = views.anchored_growth(data, anchor_date)
     if start is not None:
+        # Slice after the anchoring call above so this window never removes the anchor.
         values = values.loc[pd.Timestamp(start) :]
     fig = draw.lines(values, title=title, ylabel="Index (100 = anchor)", logy=True)
-    output.show(fig)
-    return fig
+    return output.show(fig)
 
 
 def drawdowns(
@@ -153,8 +143,7 @@ def drawdowns(
         percent=True,
         figsize=(13, 5),
     )
-    output.show(fig)
-    return fig
+    return output.show(fig)
 
 
 def annual_deviations(
@@ -163,17 +152,9 @@ def annual_deviations(
     tol: float,
     title: str = "Monthly-compounded minus reported annual return",
 ) -> Figure:
-    values = deviations.T
+    values = deviations.T.rename(columns=str)
     labels = values.map(lambda value: f"{value:.2f}" if abs(value) > tol else "")
-    fig = draw.heatmap(
-        values,
-        title=title,
-        color_label="pp",
-        limit=tol,
-        figsize=(13, 8),
-        x_rotation=90,
-        column_labels=[str(year) for year in deviations.index],
-        cell_labels=labels,
-    )
-    output.show(fig)
-    return fig
+    fig, ax = plt.subplots(figsize=(13, 8))
+    draw.heatmap(values, ax, title=title, color_label="pp", limit=tol)
+    draw.annotate(ax, labels)
+    return output.show(fig)
