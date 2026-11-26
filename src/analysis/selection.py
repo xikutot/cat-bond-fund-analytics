@@ -6,7 +6,6 @@ from math import isfinite
 import pandas as pd
 
 from analysis import columns as col, utils
-from analysis.data import panels as data_panels
 
 
 def _exposure_metric(
@@ -37,8 +36,6 @@ def _covariance(returns: pd.Series, proxy: pd.Series) -> float:
 
 def scorecard(
     *,
-    net_returns: pd.DataFrame,
-    cash_returns: pd.Series,
     excess_panel: pd.DataFrame,
     funds: Sequence[str],
     cat_exposures: pd.DataFrame,
@@ -54,12 +51,9 @@ def scorecard(
     max_control_t: float,
 ) -> pd.DataFrame:
     """Turn exposure estimates and net returns into a pass/fail screening table."""
-    utils.expect_columns(net_returns, list(funds))
-    utils.expect_columns(excess_panel, [col.MSCI_ACWI_INDEX, col.SG_CTA_INDEX])
+    utils.expect_columns(excess_panel, [*funds, col.MSCI_ACWI_INDEX, col.SG_CTA_INDEX])
 
-    net = utils.expect(net_returns.loc[:, list(funds)], pd.DataFrame)
-    cash = utils.expect(cash_returns, pd.Series)
-    net_excess = data_panels.excess(net, cash)
+    net_excess = utils.expect(excess_panel.loc[:, list(funds)], pd.DataFrame)
     equity = utils.expect(excess_panel[col.MSCI_ACWI_INDEX], pd.Series)
     cta = utils.expect(excess_panel[col.SG_CTA_INDEX], pd.Series)
     proxy = utils.expect(equity_weight * equity + cta_weight * cta, pd.Series)

@@ -38,6 +38,18 @@ UST_ZERO_5Y: str = "UST Zero 5Y Return"
 UST_ZERO_10Y: str = "UST Zero 10Y Return"
 UST_ZERO_30Y: str = "UST Zero 30Y Return"
 
+ASSET_CLASS_COLUMNS: tuple[str, ...] = (
+    PLENUM_CAT_INDEX,
+    ILS_INDEX,
+    MSCI_ACWI_INDEX,
+    SG_TREND_INDEX,
+    SG_CTA_INDEX,
+    UST_ZERO_3Y,
+    UST_ZERO_5Y,
+    UST_ZERO_10Y,
+    UST_ZERO_30Y,
+)
+
 # Panel keys
 TREASURY_ZERO_RETURNS: str = "treasury_zero_returns"
 ASSET_CLASS_RETURNS: str = "asset_class_returns"

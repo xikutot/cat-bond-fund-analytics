@@ -1,4 +1,4 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -137,30 +137,6 @@ class ExcessReturnComparison:
         assets = asset_returns.drop(columns=col.CASH)
         cash = utils.expect(asset_returns[col.CASH], pd.Series)
         return Panel(self.name, self.file_name, funds.join(excess(assets, cash)))
-
-
-def selected_funds(
-    sources: data_sources.Sources, excluded: Sequence[str]
-) -> tuple[str, ...]:
-    return tuple(
-        name for name in sources.fund_monthly.data.columns if name not in excluded
-    )
-
-
-def comparison_frames(
-    panels: Mapping[str, pd.DataFrame],
-    funds: Sequence[str],
-    indexes: Sequence[str],
-    factors: Sequence[str],
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, tuple[str, ...]]:
-    """Select the frames used by the exploration chapter."""
-    cash_bond = (*panels[CashExcess.name].columns, *indexes)
-    return (
-        utils.expect_columns(panels[ExcessReturnComparison.name], cash_bond),
-        utils.expect_columns(panels[TotalReturnComparison.name], funds),
-        utils.expect_columns(panels[ExcessReturnComparison.name], factors),
-        cash_bond,
-    )
 
 
 BUILDERS: tuple[PanelBuilder, ...] = (
