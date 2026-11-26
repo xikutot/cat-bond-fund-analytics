@@ -1,6 +1,7 @@
 from pathlib import Path
 
 
+# Keeps the path definitions below compact while ensuring their directories exist.
 def d(dir_path: Path) -> Path:
     """Return ``dir_path``, creating it once if it does not exist."""
     dir_path.mkdir(parents=True, exist_ok=True)
