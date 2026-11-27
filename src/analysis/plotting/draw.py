@@ -1,13 +1,54 @@
+from collections.abc import Sequence
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
-from matplotlib.colors import Colormap
+from matplotlib.colors import Colormap, LogNorm, Normalize, SymLogNorm
 from matplotlib.figure import Figure
 from matplotlib.image import AxesImage
-from matplotlib.ticker import FuncFormatter, MaxNLocator
+from matplotlib.ticker import (
+    Formatter,
+    FuncFormatter,
+    LogLocator,
+    MaxNLocator,
+    ScalarFormatter,
+)
 
 TITLE_SIZE: int = 28
+HEATMAP_CMAP: str = "RdYlGn"
+
+
+def symlog_norm(values: np.ndarray, *, linthresh: float) -> SymLogNorm:
+    """Map signed values onto a diverging palette with zero at its centre."""
+    magnitudes = np.abs(values[np.isfinite(values)])
+    limit = max(float(np.max(magnitudes, initial=0.0)), linthresh)
+    return SymLogNorm(linthresh=linthresh, vmin=-limit, vmax=limit)
+
+
+def symlog_ticks(norm: Normalize) -> list[float] | None:
+    """Return boundary ticks for a symlog colour scale, if it has any."""
+    if not isinstance(norm, SymLogNorm) or norm.vmin is None or norm.vmax is None:
+        return None
+    candidates = [norm.vmin, -norm.linthresh, 0.0, norm.linthresh, norm.vmax]
+    return sorted({value for value in candidates if norm.vmin <= value <= norm.vmax})
+
+
+def log_ticks(norm: LogNorm) -> list[float]:
+    """Return the scale's limits plus the usual subdivisions of each decade."""
+    low, high = float(norm.vmin), float(norm.vmax)
+    locator = LogLocator(base=10, subs="all")
+    values = [value for value in locator.tick_values(low, high) if low <= value <= high]
+    return sorted({low, high, *values})
+
+
+def log_norm(values: pd.DataFrame, *, vmax: float, error: str) -> LogNorm:
+    """Build a positive-only log colour norm for a matrix."""
+    finite = values.to_numpy(dtype=float)
+    finite = finite[np.isfinite(finite)]
+    if finite.size == 0 or np.any(finite <= 0):
+        raise ValueError(error)
+    return LogNorm(vmin=float(finite.min()), vmax=vmax)
 
 
 def lines(
@@ -42,14 +83,17 @@ def heatmap(
     *,
     title: str,
     color_label: str,
-    limit: float | None = None,
-    cmap: str | Colormap = "RdYlGn",
+    cmap: str | Colormap = HEATMAP_CMAP,
+    norm: Normalize | None = None,
+    colorbar_format: Formatter | None = None,
+    colorbar_ticks: Sequence[float] | None = None,
     x_tick_count: int | None = None,
 ) -> AxesImage:
     """Colour a matrix into ``ax`` and return its image."""
     values = data.to_numpy(dtype=float)
-    if limit is None:
-        limit = max(float(np.nanquantile(np.abs(values), 0.98)), 0.001)
+    if norm is None:
+        linthresh = max(float(np.nanquantile(np.abs(values), 0.98)), 0.001)
+        norm = symlog_norm(values, linthresh=linthresh)
 
     columns = [str(name) for name in data.columns]
     image = ax.imshow(
@@ -57,8 +101,7 @@ def heatmap(
         aspect="auto",
         interpolation="none",
         cmap=cmap,
-        vmin=-limit,
-        vmax=limit,
+        norm=norm,
     )
     ax.set_xlim(-0.5, len(columns) - 0.5)
     ax.set_yticks(range(len(data.index)), labels=[str(name) for name in data.index])
@@ -73,7 +116,16 @@ def heatmap(
     ax.set_xticks(positions, labels=labels, rotation=45, ha="right")
     ax.tick_params(axis="both", labelsize=8)
     ax.set_title(title, fontsize=TITLE_SIZE)
-    ax.figure.colorbar(image, ax=ax, label=color_label, location="left")
+    if colorbar_format is None and isinstance(norm, SymLogNorm):
+        colorbar_format = ScalarFormatter()
+    ax.figure.colorbar(
+        image,
+        ax=ax,
+        label=color_label,
+        location="left",
+        ticks=colorbar_ticks if colorbar_ticks is not None else symlog_ticks(norm),
+        format=colorbar_format,
+    )
     plt.tight_layout()
     return image
 

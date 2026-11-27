@@ -50,6 +50,7 @@ ASSET_CLASS_COLUMNS: tuple[str, ...] = (
     UST_ZERO_30Y,
 )
 
+
 # Panel keys
 TREASURY_ZERO_RETURNS: str = "treasury_zero_returns"
 ASSET_CLASS_RETURNS: str = "asset_class_returns"

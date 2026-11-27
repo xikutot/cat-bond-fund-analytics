@@ -186,11 +186,24 @@ GSW_YIELDS: SourceSpec = SourceSpec(
 # ---------------------------------------------------------------------------
 # Loader
 # ---------------------------------------------------------------------------
+def _reorder_columns(table: SourceTable, columns: pd.Index) -> SourceTable:
+    """Apply one column order to a table's data and metadata."""
+    return SourceTable(
+        table.data.reindex(columns=columns),
+        table.metadata.reindex(columns=columns),
+    )
+
+
 def load(directory: Path) -> Sources:
     raw = data_store.CsvStore(directory)
+    monthly = FUND_MONTHLY.load(raw)
+    # Deterministic fund columns: first observed month, newest first, unobserved last.
+    applied = monthly.data.apply(lambda column: column.first_valid_index())
+    first_records = pd.DataFrame(applied).iloc[:, 0]
+    order = first_records.sort_values(ascending=False, na_position="last").index
     return Sources(
-        fund_monthly=FUND_MONTHLY.load(raw),
-        fund_yearly=FUND_YEARLY.load(raw),
+        fund_monthly=_reorder_columns(monthly, order),
+        fund_yearly=_reorder_columns(FUND_YEARLY.load(raw), order),
         asset_classes=ASSET_CLASSES.load(raw),
         gsw_yields=GSW_YIELDS.load(raw),
     )

@@ -90,13 +90,63 @@ def exposure_view(
     return impacts, formatted
 
 
-def anchored_growth(returns: pd.DataFrame, anchor: pd.Timestamp) -> pd.DataFrame:
+def anchored_growth(
+    returns: pd.DataFrame,
+    anchor: str | pd.Timestamp,
+    *,
+    columns: Sequence[str] | None = None,
+    start: str | pd.Timestamp | None = None,
+) -> pd.DataFrame:
+    data = window(returns, columns)
+    anchor_date = utils.expect(
+        pd.Timestamp(anchor) + pd.offsets.MonthEnd(0), pd.Timestamp
+    )
     series: dict[str, pd.Series] = {}
-    for name in returns.columns:
-        values = returns[name].dropna()
-        if values.empty or anchor not in values.index:
-            series[name] = pd.Series(index=[anchor], dtype=float, name=name)
+    for name in data.columns:
+        values = data[name].dropna()
+        if values.empty or anchor_date not in values.index:
+            series[name] = pd.Series(index=[anchor_date], dtype=float, name=name)
             continue
         growth = (1 + values).cumprod()
-        series[name] = (100 / growth.loc[anchor] * growth).rename(name)
-    return pd.DataFrame(series).sort_index()
+        series[name] = (100 / growth.loc[anchor_date] * growth).rename(name)
+    frame = pd.DataFrame(series).sort_index()
+    if start is not None:
+        # Slice after anchoring so this window never removes the anchor.
+        frame = frame.loc[pd.Timestamp(start) :]
+    frame = frame.dropna(axis=1, how="all")
+    if frame.empty:
+        raise ValueError("No anchored growth data available.")
+    return frame
+
+
+def drawdowns(
+    returns: pd.DataFrame,
+    *,
+    columns: Sequence[str] | None = None,
+    start: str | pd.Timestamp | None = None,
+) -> pd.DataFrame:
+    data = window(returns, columns, start).dropna(axis=1, how="all")
+    if data.empty:
+        raise ValueError("No drawdown data available.")
+    growth = (1 + data).cumprod()
+    return growth.div(growth.cummax()).sub(1)
+
+
+def rolling_returns(
+    returns: pd.DataFrame,
+    *,
+    window_months: int,
+    columns: Sequence[str] | None = None,
+    start: str | pd.Timestamp | None = None,
+) -> pd.DataFrame:
+    data = window(returns, columns, start)
+    values = (
+        (1 + data)
+        .rolling(window_months, min_periods=window_months)
+        .apply(np.prod, raw=True)
+        .sub(1)
+    )
+    result = utils.expect(values.dropna(axis=1, how="all"), pd.DataFrame)
+    if result.empty:
+        raise ValueError("No rolling return data available.")
+    return result

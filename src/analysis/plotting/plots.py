@@ -2,12 +2,21 @@ from collections.abc import Sequence
 from textwrap import shorten
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
+from matplotlib.colors import Colormap, Normalize
 from matplotlib.figure import Figure
+from matplotlib.ticker import (
+    FormatStrFormatter,
+    Formatter,
+    FuncFormatter,
+    PercentFormatter,
+)
 
-from analysis import utils
 from analysis.plotting import buckets, draw, output, views
+
+
+def _return_format() -> Formatter:
+    return PercentFormatter(xmax=1, decimals=1)
 
 
 def _time_heatmap(
@@ -15,11 +24,25 @@ def _time_heatmap(
     *,
     title: str,
     color_label: str,
+    cmap: str | Colormap = draw.HEATMAP_CMAP,
+    norm: Normalize | None = None,
+    colorbar_format: Formatter | None = None,
+    colorbar_ticks: Sequence[float] | None = None,
 ) -> Figure:
     """Draw a dated matrix with twelve sampled date labels."""
     matrix = data.T.rename(columns=lambda date: date.strftime("%Y-%m"))
     fig, ax = plt.subplots(figsize=(14, max(5, len(data.columns) * 0.32)))
-    draw.heatmap(matrix, ax, title=title, color_label=color_label, x_tick_count=12)
+    draw.heatmap(
+        matrix,
+        ax,
+        title=title,
+        color_label=color_label,
+        cmap=cmap,
+        norm=norm,
+        colorbar_format=colorbar_format,
+        colorbar_ticks=colorbar_ticks,
+        x_tick_count=12,
+    )
     return output.show(fig)
 
 
@@ -34,7 +57,33 @@ def monthly_heatmap(
     if data.empty:
         raise ValueError("No return data available for the heatmap.")
 
-    return _time_heatmap(data, title=title, color_label="Monthly return")
+    return _time_heatmap(
+        data,
+        title=title,
+        color_label="Monthly return",
+        colorbar_format=_return_format(),
+    )
+
+
+def rolling_returns(
+    returns: pd.DataFrame,
+    *,
+    columns: Sequence[str] | None = None,
+    window: int = 12,
+    start: str | pd.Timestamp | None = None,
+    title: str = "Rolling {window}-month returns",
+) -> Figure:
+    values = views.rolling_returns(
+        returns, window_months=window, columns=columns, start=start
+    )
+
+    fig = draw.lines(
+        values,
+        title=title.format(window=window),
+        ylabel=f"Rolling {window}-month return",
+        percent=True,
+    )
+    return output.show(fig)
 
 
 def rolling_returns_heatmap(
@@ -43,23 +92,17 @@ def rolling_returns_heatmap(
     columns: Sequence[str] | None = None,
     window: int = 12,
     start: str | pd.Timestamp | None = None,
-    title: str | None = None,
+    title: str = "Rolling {window}-month returns",
 ) -> Figure:
-    data = views.window(returns, columns, start)
-    rolling = (
-        (1 + data)
-        .rolling(window, min_periods=window)
-        .apply(np.prod, raw=True)
-        .sub(1)
+    rolling = views.rolling_returns(
+        returns, window_months=window, columns=columns, start=start
     )
-    rolling = utils.expect(rolling.dropna(axis=1, how="all"), pd.DataFrame)
-    if rolling.empty:
-        raise ValueError("No rolling return data available.")
 
     return _time_heatmap(
         rolling,
-        title=f"Rolling {window}-month returns" if title is None else title,
+        title=title.format(window=window),
         color_label="Return",
+        colorbar_format=_return_format(),
     )
 
 
@@ -67,7 +110,7 @@ def correlation_heatmap(
     frame: pd.DataFrame,
     *,
     columns: Sequence[str] | None = None,
-    title: str = "Correlation with fund and index returns",
+    title: str = "Correlation matrix",
 ) -> Figure:
     values, bucket_values = views.correlation_view(frame, columns)
     display = values.rename(
@@ -112,17 +155,15 @@ def anchored_growth(
     columns: Sequence[str] | None = None,
     anchor: str | pd.Timestamp,
     start: str | pd.Timestamp | None = None,
-    title: str = "Growth of 100 at anchor",
+    title: str = "Growth rebased to 100 at {anchor}",
 ) -> Figure:
-    data = views.window(returns, columns)
-    anchor_date = utils.expect(
-        pd.Timestamp(anchor) + pd.offsets.MonthEnd(0), pd.Timestamp
+    values = views.anchored_growth(returns, anchor, columns=columns, start=start)
+    fig = draw.lines(
+        values,
+        title=title.format(anchor=anchor),
+        ylabel="Index (100 = anchor)",
+        logy=True,
     )
-    values = views.anchored_growth(data, anchor_date)
-    if start is not None:
-        # Slice after the anchoring call above so this window never removes the anchor.
-        values = values.loc[pd.Timestamp(start) :]
-    fig = draw.lines(values, title=title, ylabel="Index (100 = anchor)", logy=True)
     return output.show(fig)
 
 
@@ -133,17 +174,64 @@ def drawdowns(
     start: str | pd.Timestamp | None = None,
     title: str = "Drawdowns",
 ) -> Figure:
-    data = views.window(returns, columns, start)
-    growth = (1 + data).cumprod()
-    series = growth.div(growth.cummax()).sub(1)
+    values = views.drawdowns(returns, columns=columns, start=start)
     fig = draw.lines(
-        series,
+        values,
         title=title,
         ylabel="Drawdown",
         percent=True,
         figsize=(13, 5),
     )
     return output.show(fig)
+
+
+def drawdown_heatmap(
+    returns: pd.DataFrame,
+    *,
+    columns: Sequence[str] | None = None,
+    start: str | pd.Timestamp | None = None,
+    title: str = "Drawdowns",
+) -> Figure:
+    values = views.drawdowns(returns, columns=columns, start=start).add(1)
+    norm = draw.log_norm(
+        values,
+        vmax=1.0,
+        error="Drawdowns must exceed -100% for a log colour scale.",
+    )
+    return _time_heatmap(
+        values,
+        title=title,
+        color_label="Drawdown",
+        cmap="rainbow_r",
+        norm=norm,
+        colorbar_format=FuncFormatter(lambda value, _: f"{value - 1:.0%}"),
+        colorbar_ticks=draw.log_ticks(norm),
+    )
+
+
+def anchored_growth_heatmap(
+    returns: pd.DataFrame,
+    *,
+    columns: Sequence[str] | None = None,
+    anchor: str | pd.Timestamp,
+    start: str | pd.Timestamp | None = None,
+    title: str = "Growth rebased to 100 at {anchor}",
+) -> Figure:
+    values = views.anchored_growth(returns, anchor, columns=columns, start=start)
+    norm = draw.log_norm(
+        values,
+        vmax=100.0,
+        error="Anchored growth must be positive for a log colour scale.",
+    )
+    return _time_heatmap(
+        values,
+        title=title.format(anchor=anchor),
+        color_label="Index (100 = anchor)",
+        cmap="RdYlGn_r",
+        norm=norm,
+        colorbar_format=FormatStrFormatter("%.0f"),
+        colorbar_ticks=draw.log_ticks(norm),
+    )
 
 
 def annual_deviations(
@@ -155,6 +243,12 @@ def annual_deviations(
     values = deviations.T.rename(columns=str)
     labels = values.map(lambda value: f"{value:.2f}" if abs(value) > tol else "")
     fig, ax = plt.subplots(figsize=(13, 8))
-    draw.heatmap(values, ax, title=title, color_label="pp", limit=tol)
+    draw.heatmap(
+        values,
+        ax,
+        title=title,
+        color_label="pp",
+        norm=draw.symlog_norm(values.to_numpy(dtype=float), linthresh=tol),
+    )
     draw.annotate(ax, labels)
     return output.show(fig)

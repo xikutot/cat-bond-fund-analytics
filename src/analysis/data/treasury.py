@@ -1,10 +1,22 @@
+"""Build monthly synthetic zero-coupon Treasury returns from the GSW curve.
+
+The Federal Reserve Board's GSW curve (Gurkaynak, Sack and Wright, FEDS
+2006-28, "The U.S. Treasury yield curve: 1961 to the present") provides daily
+continuously compounded zero-coupon yields. For each configured maturity, a
+zero bought at month end is priced from that curve and repriced one month later
+with its remaining maturity; the price ratio minus one is the synthetic
+roll-down return used as a Treasury factor in the regressions.
+
+Source: https://www.federalreserve.gov/data/yield-curve-tables/feds200628_1.html
+"""
+
 from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
 
-from analysis import columns as col, utils
-
+from analysis import columns as col
+from analysis import utils
 
 DAYS_PER_YEAR: float = 365.25
 
